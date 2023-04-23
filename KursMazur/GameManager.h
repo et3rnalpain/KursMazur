@@ -4,7 +4,7 @@
 #include <string>
 #include <SDL_image.h>
 #include <time.h>
-
+#include <SDL_ttf.h>
 using namespace std;
 
 SDL_Texture* CreateTextTexture(string text);
