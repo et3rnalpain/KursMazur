@@ -24,6 +24,16 @@ SDL_Texture* IntTextTexture(SDL_Renderer* renderer, string text, TTF_Font* my_fo
     return texture;
 }
 
+SDL_Texture* timerTexture(SDL_Renderer* renderer, int time, TTF_Font* my_font) 
+{
+    SDL_Color fon = { 100,100,100,0 };
+    SDL_Color textcolor = { 200, 200,200,0 };
+    SDL_Surface* face = TTF_RenderUTF8_Shaded(my_font, to_string(time).c_str(), textcolor, fon);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, face);
+    SDL_FreeSurface(face);
+    return texture;
+}
+
 void drawMineCount(SDL_Renderer*& renderer, int yCount, int xCount, GameCell** cells, TTF_Font* my_font)
 {
     for (int i = 0; i < yCount; i++)
@@ -239,6 +249,7 @@ void countMinesAround(GameCell** cells, int xCount, int yCount, SDL_Renderer* re
 
 bool gameStart(int w,int h, int minesCount, int xCount, int yCount) 
 {
+    int ticks = 0, currenttime = 0, mines = minesCount;
     bool firstClick = false;
     SDL_Window* game = SDL_CreateWindow("Saper Main Menu", 400, 400, w, h, SDL_WINDOW_SHOWN);
     SDL_Surface* Icon = IMG_Load("gameCellMine.bmp");
@@ -251,6 +262,10 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
     SDL_Surface* emptyGameCellTexture = IMG_Load("gameCellEmpty.bmp");
     SDL_Surface* mineGameCellTexture = IMG_Load("gameCellMine.bmp");
     SDL_Surface* flagGameCellTexture = IMG_Load("gameCellFlag.bmp");
+    SDL_Rect timerrect = { w - 75, 10,50,60 };
+    SDL_Rect mineCount = { 25, 10, 50,60 };
+    SDL_Texture* timerText = timerTexture(gamerenderer, currenttime, font);
+    SDL_Texture* minesText = timerTexture(gamerenderer, mines, font);
     GameCell** cells = new GameCell*[yCount];
     for (int i = 0; i < yCount; i++) 
     {
@@ -260,13 +275,15 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
     {
         for (int z = 0; z < xCount; z++) 
         {
-            cells[i][z].destination = cells[i][z].numdestination = {50+z*30,100+i*30,30,30};
+            cells[i][z].destination = cells[i][z].numdestination = {25+z*30,75+i*30,30,30};
             if (!cells[i][z].isMine) cells[i][z].celltexture = SDL_CreateTextureFromSurface(gamerenderer, closedGameCellTexture);
         }
     }
 
     bool quit = false;
     bool restart = false;
+    bool starttimer = false;
+    int starttime;
     while (!quit) 
     {
         SDL_SetRenderDrawColor(gamerenderer, 230, 230, 230, 0);
@@ -289,6 +306,8 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
                             countMinesAround(cells, xCount, yCount, gamerenderer, font);
                             firstClick = true;
                             if(cells[i][z].minesAround == 0) openEmptyCells(gamerenderer, emptyGameCellTexture, cells, yCount, xCount, i, z);
+                            starttime = SDL_GetTicks();
+                            starttimer = true;
                         }
                         if (isCellHit(event.button.x, event.button.y, cells[i][z]) && cells[i][z].isMine && !cells[i][z].isOpen && !cells[i][z].isBlocked)
                         {
@@ -301,8 +320,10 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
                                         cells[i][z].isOpen = true;
                                     }
                                     cells[i][z].isBlocked = true;
+                                    
                                 }
                             }
+                            starttimer = false;
                         }
                         if (isCellHit(event.button.x, event.button.y, cells[i][z]) && !cells[i][z].isMine && !cells[i][z].isOpen && !cells[i][z].isBlocked)
                         {
@@ -327,11 +348,15 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
                         {
                             cells[i][z].isBlocked = true;
                             cells[i][z].celltexture = SDL_CreateTextureFromSurface(gamerenderer, flagGameCellTexture);
+                            mines--;
+                            minesText = timerTexture(gamerenderer, mines, font);
                         }
                         else if (isCellHit(event.button.x, event.button.y, cells[i][z]) && !cells[i][z].isOpen && cells[i][z].isBlocked) 
                         {
                             cells[i][z].isBlocked = false;
                             cells[i][z].celltexture = SDL_CreateTextureFromSurface(gamerenderer, closedGameCellTexture);
+                            mines++;
+                            minesText = timerTexture(gamerenderer, mines, font);
                         }
                     }
                 }
@@ -342,10 +367,23 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
                 quit = true;
             }
         }
+        
         drawCells(gamerenderer,yCount,xCount,cells);
         drawMineCount(gamerenderer,yCount,xCount,cells,font);
+        SDL_RenderCopy(gamerenderer, minesText, NULL, &mineCount);
+        if (starttimer) 
+        {
+            ticks = (SDL_GetTicks() - starttime)/1000;
+            if (currenttime < ticks) {
+                currenttime = ticks;
+                timerText = timerTexture(gamerenderer, currenttime, font);
+            }
+            SDL_RenderCopy(gamerenderer, timerText, NULL, &timerrect);
+        }
+        if (winningCheck(cells, minesCount, xCount, yCount)) { cout << " Победа!" << endl; starttimer = false; break; }
+        SDL_RenderCopy(gamerenderer, timerText, NULL, &timerrect);
         SDL_RenderPresent(gamerenderer);
-        if (winningCheck(cells, minesCount, xCount, yCount)) { cout << " Победа!" << endl; break; }
+        
     }
 
     //Очистка памяти
@@ -363,12 +401,12 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
 int main(int argc, char* argv[])
 {
     srand(time(NULL));
-    int width, height, minesCount = 2, xCount, yCount;
-    xCount = 3;
-    yCount = 3;
+    int width, height, minesCount = 10, xCount, yCount;
+    xCount = 9;
+    yCount = 9;
     bool quit;
-    width = 100 + xCount * 30;
-    height = 200 + yCount * 30;
+    width = 50 + xCount * 30;
+    height = 100 + yCount * 30;
     SDL_Init(SDL_INIT_EVERYTHING);
     do 
     {
