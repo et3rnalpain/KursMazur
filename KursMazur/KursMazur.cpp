@@ -6,6 +6,7 @@ struct GameCell
     int minesAround = 0;
     bool isMine = false;
     bool isOpen = false;
+    bool isBlocked = false;
     SDL_Texture* celltexture = NULL;
     SDL_Rect destination;
     SDL_Texture* numtexture = NULL;
@@ -15,7 +16,7 @@ struct GameCell
 SDL_Texture* IntTextTexture(SDL_Renderer* renderer, string text, TTF_Font* my_font)
 {
     SDL_Color fon = { 0,0,0,255 };
-    SDL_Color textcolor = { 10+ stoi(text) * 40, 100+stoi(text) * 15,150+stoi(text) * 15,0 };
+    SDL_Color textcolor = { 10+ stoi(text) * 60, 20+stoi(text) * 15,150+stoi(text) * 15,0 };
     SDL_Surface* face = TTF_RenderUTF8_Shaded(my_font, text.c_str(), textcolor, fon);
     SDL_SetColorKey(face, 10, SDL_MapRGB(face->format, 0, 0, 0));
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, face);
@@ -60,7 +61,22 @@ void generateLevel(int y, int x, int minescount, GameCell** cells, int ignorey, 
     }
 }
 
-
+bool winningCheck(GameCell** cells, int MinesCount, int x, int y)
+{
+    int cellsCount = x * y;
+    int openCellsCount = 0;
+    
+    for (int i = 0; i < y; i++) 
+    {
+        for (int z = 0; z < x; z++) 
+        {
+            if (cells[i][z].isOpen) openCellsCount++;
+        }
+    }
+    cellsCount -= openCellsCount;
+    if (cellsCount == MinesCount) return true;
+    else return false;
+}
 
 bool isCellHit(int mouse_x, int mouse_y, GameCell cells) 
 {
@@ -75,7 +91,7 @@ bool isCellHit(int mouse_x, int mouse_y, GameCell cells)
 
 bool isExist(int x, int y, int xCount, int yCount) 
 {
-    return (x >= 0) && (x <= xCount-1) && (y >= 0) && (y <= yCount-1);
+    return (x >= 0) && (x < yCount) && (y >= 0) && (y < xCount);
 }
 
 void openEmptyCells(SDL_Renderer*& gamerenderer,SDL_Surface* emptyGameCellTexture,GameCell** cells, int yCount, int xCount, int curry, int currx)
@@ -187,7 +203,7 @@ void countMinesAround(GameCell** cells, int xCount, int yCount, SDL_Renderer* re
             }
             if (isExist(i + 1, z, xCount, yCount))
             {
-                if (cells[i + 1][z].isMine) cells[i][z].minesAround++;
+               if (cells[i + 1][z].isMine) cells[i][z].minesAround++;
             }
             if (isExist(i, z + 1, xCount, yCount))
             {
@@ -224,8 +240,8 @@ void countMinesAround(GameCell** cells, int xCount, int yCount, SDL_Renderer* re
 bool gameStart(int w,int h, int minesCount, int xCount, int yCount) 
 {
     bool firstClick = false;
-    SDL_Surface* Icon = IMG_Load("gameCellMine.bmp");
     SDL_Window* game = SDL_CreateWindow("Saper Main Menu", 400, 400, w, h, SDL_WINDOW_SHOWN);
+    SDL_Surface* Icon = IMG_Load("gameCellMine.bmp");
     SDL_SetWindowIcon(game, Icon);
     TTF_Init();
     TTF_Font* font = TTF_OpenFont("Arialbd.ttf",100);
@@ -234,12 +250,12 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
     SDL_Surface* closedGameCellTexture = IMG_Load("gameCell.bmp");
     SDL_Surface* emptyGameCellTexture = IMG_Load("gameCellEmpty.bmp");
     SDL_Surface* mineGameCellTexture = IMG_Load("gameCellMine.bmp");
+    SDL_Surface* flagGameCellTexture = IMG_Load("gameCellFlag.bmp");
     GameCell** cells = new GameCell*[yCount];
     for (int i = 0; i < yCount; i++) 
     {
         cells[i] = new GameCell[xCount];
     }
-
     for (int i = 0; i < yCount; i++) 
     {
         for (int z = 0; z < xCount; z++) 
@@ -267,14 +283,14 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
                 {
                     for (int z = 0; z < xCount; z++) 
                     {
-                        if (isCellHit(event.button.x, event.button.y, cells[i][z]) && !firstClick) 
+                        if (isCellHit(event.button.x, event.button.y, cells[i][z]) && !firstClick && !cells[i][z].isBlocked)
                         {
                             generateLevel(yCount,xCount,minesCount,cells,i,z);
                             countMinesAround(cells, xCount, yCount, gamerenderer, font);
                             firstClick = true;
                             if(cells[i][z].minesAround == 0) openEmptyCells(gamerenderer, emptyGameCellTexture, cells, yCount, xCount, i, z);
                         }
-                        if (isCellHit(event.button.x, event.button.y, cells[i][z]) && cells[i][z].isMine && !cells[i][z].isOpen)
+                        if (isCellHit(event.button.x, event.button.y, cells[i][z]) && cells[i][z].isMine && !cells[i][z].isOpen && !cells[i][z].isBlocked)
                         {
                             for (int i = 0; i < yCount; i++)
                             {
@@ -284,10 +300,11 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
                                         cells[i][z].celltexture = SDL_CreateTextureFromSurface(gamerenderer, mineGameCellTexture);
                                         cells[i][z].isOpen = true;
                                     }
+                                    cells[i][z].isBlocked = true;
                                 }
                             }
                         }
-                        if (isCellHit(event.button.x, event.button.y, cells[i][z]) && !cells[i][z].isMine && !cells[i][z].isOpen)
+                        if (isCellHit(event.button.x, event.button.y, cells[i][z]) && !cells[i][z].isMine && !cells[i][z].isOpen && !cells[i][z].isBlocked)
                         {
                             cells[i][z].celltexture = SDL_CreateTextureFromSurface(gamerenderer, emptyGameCellTexture);
                             cells[i][z].isOpen = true;
@@ -300,7 +317,26 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
                     }
                 }
             }
-            if ((event.key.keysym.sym = SDLK_F5) && (event.type == SDL_KEYUP)) 
+            if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_RIGHT)
+            {
+                for (int i = 0; i < yCount; i++)
+                {
+                    for (int z = 0; z < xCount; z++)
+                    {
+                        if (isCellHit(event.button.x, event.button.y, cells[i][z]) && !cells[i][z].isOpen && !cells[i][z].isBlocked)
+                        {
+                            cells[i][z].isBlocked = true;
+                            cells[i][z].celltexture = SDL_CreateTextureFromSurface(gamerenderer, flagGameCellTexture);
+                        }
+                        else if (isCellHit(event.button.x, event.button.y, cells[i][z]) && !cells[i][z].isOpen && cells[i][z].isBlocked) 
+                        {
+                            cells[i][z].isBlocked = false;
+                            cells[i][z].celltexture = SDL_CreateTextureFromSurface(gamerenderer, closedGameCellTexture);
+                        }
+                    }
+                }
+            }
+            if ((event.type == SDL_KEYUP) && (event.key.keysym.sym = SDLK_F5))
             {
                 restart = true;
                 quit = true;
@@ -309,6 +345,7 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
         drawCells(gamerenderer,yCount,xCount,cells);
         drawMineCount(gamerenderer,yCount,xCount,cells,font);
         SDL_RenderPresent(gamerenderer);
+        if (winningCheck(cells, minesCount, xCount, yCount)) { cout << " Победа!" << endl; break; }
     }
 
     //Очистка памяти
@@ -326,9 +363,9 @@ bool gameStart(int w,int h, int minesCount, int xCount, int yCount)
 int main(int argc, char* argv[])
 {
     srand(time(NULL));
-    int width, height, minesCount = 10, xCount, yCount;
-    xCount = 9;
-    yCount = 9;
+    int width, height, minesCount = 2, xCount, yCount;
+    xCount = 3;
+    yCount = 3;
     bool quit;
     width = 100 + xCount * 30;
     height = 200 + yCount * 30;
