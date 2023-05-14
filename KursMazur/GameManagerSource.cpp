@@ -236,17 +236,20 @@ void countMinesAround(GameCell** cells, int xCount, int yCount, SDL_Renderer* re
 
 }
 
-bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
+bool gameStart(int w, int h, int minesCount, int xCount, int yCount, string nickname)
 {
     int ticks = 0, currenttime = 0, mines = minesCount;
     bool firstClick = false;
-    SDL_Window* game = SDL_CreateWindow("Saper Main Menu", 400, 400, w, h, SDL_WINDOW_SHOWN);
+    SDL_Window* game = SDL_CreateWindow("Saper", 400, 400, w, h, SDL_WINDOW_SHOWN);
     SDL_Surface* Icon = IMG_Load("gameCellMine.bmp");
     SDL_SetWindowIcon(game, Icon);
     TTF_Init();
     TTF_Font* font = TTF_OpenFont("Arialbd.ttf", 100);
     SDL_Renderer* gamerenderer = SDL_CreateRenderer(game, -1, 0);
     SDL_Event event;
+    Mix_Chunk* click = Mix_LoadWAV("click.wav");
+    Mix_Chunk* click2 = Mix_LoadWAV("click2.wav");
+    Mix_Chunk* explode = Mix_LoadWAV("explode.wav");
     SDL_Surface* closedGameCellTexture = IMG_Load("gameCell.bmp");
     SDL_Surface* emptyGameCellTexture = IMG_Load("gameCellEmpty.bmp");
     SDL_Surface* mineGameCellTexture = IMG_Load("gameCellMine.bmp");
@@ -256,7 +259,7 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
     SDL_Surface* win = IMG_Load("win.bmp");
     SDL_Rect timerrect = { w - 75, 10,50,60 };
     SDL_Rect mineCount = { 25, 10, 50,60 };
-    SDL_Rect restartButton = { w / 2 - 25,10,60,60 };
+    SDL_Rect restartButton = { w / 2 - 30,10,60,60 };
     SDL_Texture* restartButtonTexture1 = SDL_CreateTextureFromSurface(gamerenderer, alive);
     SDL_Texture* restartButtonTexture2 = SDL_CreateTextureFromSurface(gamerenderer, dead);
     SDL_Texture* restartButtonTexture3 = SDL_CreateTextureFromSurface(gamerenderer, win);
@@ -264,6 +267,8 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
     SDL_Texture* timerText = timerTexture(gamerenderer, currenttime, font);
     SDL_Texture* minesText = timerTexture(gamerenderer, mines, font);
     GameCell** cells = new GameCell * [yCount];
+    ofstream fout;
+    fout.open("record.txt", ios::app);
     for (int i = 0; i < yCount; i++)
     {
         cells[i] = new GameCell[xCount];
@@ -290,6 +295,8 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
             if (event.type == SDL_QUIT)
             {
                 quit = true;
+                restart = false;
+                break;
             }
             if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT)
             {
@@ -305,6 +312,7 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
                             if (cells[i][z].minesAround == 0) openEmptyCells(gamerenderer, emptyGameCellTexture, cells, yCount, xCount, i, z);
                             starttime = SDL_GetTicks();
                             starttimer = true;
+                            Mix_PlayChannel(0, click, 0);
                         }
                         if (isCellHit(event.button.x, event.button.y, cells[i][z]) && cells[i][z].isMine && !cells[i][z].isOpen && !cells[i][z].isBlocked)
                         {
@@ -321,6 +329,7 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
                                 }
                             }
                             starttimer = false;
+                            Mix_PlayChannel(0, explode, 0);
                         }
                         if (isCellHit(event.button.x, event.button.y, cells[i][z]) && !cells[i][z].isMine && !cells[i][z].isOpen && !cells[i][z].isBlocked)
                         {
@@ -330,13 +339,21 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
                             {
                                 openEmptyCells(gamerenderer, emptyGameCellTexture, cells, yCount, xCount, i, z);
                             }
+                            Mix_PlayChannel(0, click, 0);
                         }
 
                     }
                 }
+                if (event.button.x > w / 2 - 30 && event.button.x < w / 2 + 30 && event.button.y > 10 && event.button.y < 70) 
+                {
+                    Mix_PlayChannel(0, click2, 0);
+                    restart = true;
+                    quit = true;
+                }
             }
-            if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_RIGHT)
+            if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_RIGHT && starttimer)
             {
+                Mix_PlayChannel(0, click2, 0);
                 for (int i = 0; i < yCount; i++)
                 {
                     for (int z = 0; z < xCount; z++)
@@ -358,11 +375,6 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
                     }
                 }
             }
-            if ((event.type == SDL_KEYUP) && (event.key.keysym.sym = SDLK_F5))
-            {
-                restart = true;
-                quit = true;
-            }
         }
         SDL_RenderCopy(gamerenderer, rbt, NULL, &restartButton);
         drawCells(gamerenderer, yCount, xCount, cells);
@@ -377,10 +389,21 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
             }
             SDL_RenderCopy(gamerenderer, timerText, NULL, &timerrect);
         }
-        if (winningCheck(cells, minesCount, xCount, yCount)) { cout << " Победа!" << endl; starttimer = false; rbt = restartButtonTexture3;}
+        if (winningCheck(cells, minesCount, xCount, yCount)) 
+        { 
+            if(starttimer) fout << "Nickname: " << nickname << " x: " << xCount << " y: " << yCount << " mines: " << minesCount << " Time:" << currenttime << endl;
+            starttimer = false;
+            rbt = restartButtonTexture3; 
+            for (int i = 0; i < yCount; i++)
+            {
+                for (int z = 0; z < xCount; z++)
+                {
+                    cells[i][z].isBlocked = true;
+                }
+            }
+        }
         SDL_RenderCopy(gamerenderer, timerText, NULL, &timerrect);
         SDL_RenderPresent(gamerenderer);
-
     }
 
     //Очистка памяти
@@ -389,8 +412,14 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount)
         delete[] cells[i];
     }
     delete[] cells;
+    SDL_FreeSurface(closedGameCellTexture); SDL_FreeSurface(mineGameCellTexture); SDL_FreeSurface(emptyGameCellTexture); SDL_FreeSurface(flagGameCellTexture); SDL_FreeSurface(alive); SDL_FreeSurface(dead); SDL_FreeSurface(win);
+    Mix_FreeChunk(click); Mix_FreeChunk(click2); Mix_FreeChunk(explode);
+    SDL_DestroyTexture(restartButtonTexture1); SDL_DestroyTexture(restartButtonTexture2); SDL_DestroyTexture(restartButtonTexture3); SDL_DestroyTexture(rbt); SDL_DestroyTexture(minesText); SDL_DestroyTexture(timerText);
     SDL_DestroyWindow(game);
     SDL_DestroyRenderer(gamerenderer);
-    if (restart == true) return false;
-    else return true;
+    TTF_Quit();
+    fout.close();
+    if (restart == false) return true;
+    else return false;
+
 }

@@ -1,13 +1,15 @@
 #pragma once
-#include "GameManager.h"
 #include <SDL.h>
 #include <string>
 #include <SDL_image.h>
 #include <time.h>
 #include <SDL_ttf.h>
 #include <iostream>
+#include <fstream>
+#include "SDL_mixer.h"
 
 using namespace std;
+
 
 struct GameCell
 {
@@ -30,4 +32,4 @@ bool isCellHit(int mouse_x, int mouse_y, GameCell cells);
 bool isExist(int x, int y, int xCount, int yCount);
 void openEmptyCells(SDL_Renderer*& gamerenderer, SDL_Surface* emptyGameCellTexture, GameCell** cells, int yCount, int xCount, int curry, int currx);
 void countMinesAround(GameCell** cells, int xCount, int yCount, SDL_Renderer* renderer, TTF_Font* my_font);
-bool gameStart(int w, int h, int minesCount, int xCount, int yCount);
+bool gameStart(int w, int h, int minesCount, int xCount, int yCount, string nickname);
