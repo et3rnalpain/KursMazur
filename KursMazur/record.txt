@@ -1,3 +1,7 @@
-Nickname: Pavel x: 15 y: 18 mines: 8 Time:9
-Nickname: Pavel x: 9 y: 9 mines: 10 Time:36
-Nickname: Pavel x: 9 y: 9 mines: 10 Time:36
+Pavel 9 9 10 42
+Pavel 9 9 10 55
+Pavel 16 16 40 261
+Dmitry 9 9 10 29
+Никита 9 9 10 26
+Pavel 15 9 10 9
+Pavel 15 9 1 1

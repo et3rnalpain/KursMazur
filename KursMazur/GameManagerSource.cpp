@@ -13,6 +13,17 @@ SDL_Texture* IntTextTexture(SDL_Renderer* renderer, string text, TTF_Font* my_fo
     return texture;
 }
 
+SDL_Texture* TextTexture(SDL_Renderer* renderer, string text, TTF_Font* my_font)
+{
+    SDL_Color fon = { 0,0,0,255 };
+    SDL_Color textcolor = { 0,0,0,0 };
+    SDL_Surface* face = TTF_RenderUTF8_Shaded(my_font, text.c_str(), textcolor, fon);
+    SDL_SetColorKey(face, 10, SDL_MapRGB(face->format, 0, 0, 0));
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, face);
+    SDL_FreeSurface(face);
+    return texture;
+}
+
 SDL_Texture* timerTexture(SDL_Renderer* renderer, int time, TTF_Font* my_font)
 {
     SDL_Color fon = { 100,100,100,0 };
@@ -236,12 +247,13 @@ void countMinesAround(GameCell** cells, int xCount, int yCount, SDL_Renderer* re
 
 }
 
-bool gameStart(int w, int h, int minesCount, int xCount, int yCount, string nickname)
+bool gameStart(int w, int h, int minesCount, int xCount, int yCount, string nickname, bool fs)
 {
     int ticks = 0, currenttime = 0, mines = minesCount;
     bool firstClick = false;
     SDL_Window* game = SDL_CreateWindow("Saper", 400, 400, w, h, SDL_WINDOW_SHOWN);
     SDL_Surface* Icon = IMG_Load("gameCellMine.bmp");
+    if (fs) SDL_SetWindowFullscreen(game, SDL_WINDOW_FULLSCREEN_DESKTOP);
     SDL_SetWindowIcon(game, Icon);
     TTF_Init();
     TTF_Font* font = TTF_OpenFont("Arialbd.ttf", 100);
@@ -375,6 +387,12 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount, string nick
                     }
                 }
             }
+            if (event.key.keysym.sym == SDLK_ESCAPE && event.type == SDL_KEYUP) 
+            {
+                quit = true;
+                restart = false;
+                break;
+            }
         }
         SDL_RenderCopy(gamerenderer, rbt, NULL, &restartButton);
         drawCells(gamerenderer, yCount, xCount, cells);
@@ -391,7 +409,7 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount, string nick
         }
         if (winningCheck(cells, minesCount, xCount, yCount)) 
         { 
-            if(starttimer) fout << "Nickname: " << nickname << " x: " << xCount << " y: " << yCount << " mines: " << minesCount << " Time:" << currenttime << endl;
+            if(starttimer) fout << nickname << " "<< xCount << " " << yCount<< " " << minesCount<< " " << currenttime << endl;
             starttimer = false;
             rbt = restartButtonTexture3; 
             for (int i = 0; i < yCount; i++)
@@ -412,6 +430,7 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount, string nick
         delete[] cells[i];
     }
     delete[] cells;
+    TTF_CloseFont(font);
     SDL_FreeSurface(closedGameCellTexture); SDL_FreeSurface(mineGameCellTexture); SDL_FreeSurface(emptyGameCellTexture); SDL_FreeSurface(flagGameCellTexture); SDL_FreeSurface(alive); SDL_FreeSurface(dead); SDL_FreeSurface(win);
     Mix_FreeChunk(click); Mix_FreeChunk(click2); Mix_FreeChunk(explode);
     SDL_DestroyTexture(restartButtonTexture1); SDL_DestroyTexture(restartButtonTexture2); SDL_DestroyTexture(restartButtonTexture3); SDL_DestroyTexture(rbt); SDL_DestroyTexture(minesText); SDL_DestroyTexture(timerText);
