@@ -409,6 +409,7 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount, string nick
             ticks = (SDL_GetTicks() - starttime) / 1000;
             if (currenttime < ticks) {
                 currenttime = ticks;
+                SDL_DestroyTexture(timerText);
                 timerText = timerTexture(gamerenderer, currenttime, font);
             }
             SDL_RenderCopy(gamerenderer, timerText, NULL, &timerrect);
