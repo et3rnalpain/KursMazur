@@ -393,6 +393,12 @@ bool gameStart(int w, int h, int minesCount, int xCount, int yCount, string nick
                 restart = false;
                 break;
             }
+            if (event.key.keysym.sym == SDLK_r && event.type == SDL_KEYUP)
+            {
+                quit = true;
+                restart = true;
+                break;
+            }
         }
         SDL_RenderCopy(gamerenderer, rbt, NULL, &restartButton);
         drawCells(gamerenderer, yCount, xCount, cells);

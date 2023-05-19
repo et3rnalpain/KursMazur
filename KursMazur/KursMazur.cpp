@@ -90,23 +90,23 @@ int main(int argc, char* argv[])
                 mainmenu = SDL_CreateWindow("Main Menu", 200, 200, 600, 500, SDL_WINDOW_SHOWN);
                 menurenderer = SDL_CreateRenderer(mainmenu, -1, 0);
                 SDL_RenderPresent(menurenderer);
-                 startgame = IMG_Load("startgame.bmp"); startgamebutton = { 100,20,400,100 };  sgbuttontexture = SDL_CreateTextureFromSurface(menurenderer, startgame);
-                 exitgame = IMG_Load("exit.bmp");  exitgamebutton = { 100,380,400,100 };  egbuttontexture = SDL_CreateTextureFromSurface(menurenderer, exitgame);
-                 settings = IMG_Load("settings.bmp");  settingsbutton = { 100,140,400,100 };  sbuttontexture = SDL_CreateTextureFromSurface(menurenderer, settings);
-                 records = IMG_Load("records.bmp");  recordsbutton = { 100,260,400,100 }; rbuttontexture = SDL_CreateTextureFromSurface(menurenderer, records);
+                startgame = IMG_Load("startgame.bmp"); startgamebutton = { 100,20,400,100 };  sgbuttontexture = SDL_CreateTextureFromSurface(menurenderer, startgame);
+                exitgame = IMG_Load("exit.bmp");  exitgamebutton = { 100,380,400,100 };  egbuttontexture = SDL_CreateTextureFromSurface(menurenderer, exitgame);
+                settings = IMG_Load("settings.bmp");  settingsbutton = { 100,140,400,100 };  sbuttontexture = SDL_CreateTextureFromSurface(menurenderer, settings);
+                records = IMG_Load("records.bmp");  recordsbutton = { 100,260,400,100 }; rbuttontexture = SDL_CreateTextureFromSurface(menurenderer, records);
                 SDL_Rect textinput = { W / 2,H / 2 - 230,280,45 };
-                 tonfs = IMG_Load("tonfs.bmp"); tofffs = IMG_Load("tofffs.bmp"); fullscreen = { W / 2 - 290,H / 2 - 130, 280,45 };
+                tonfs = IMG_Load("tonfs.bmp"); tofffs = IMG_Load("tofffs.bmp"); fullscreen = { W / 2 - 290,H / 2 - 130, 280,45 };
                 tonfstexture = SDL_CreateTextureFromSurface(menurenderer, tonfs);
                 tofffstexture = SDL_CreateTextureFromSurface(menurenderer, tofffs);
-                 tonm = IMG_Load("tonm.bmp");  toffm = IMG_Load("toffm.bmp"); soundvolume = { W / 2 - 290,H / 2 - 30,280,45 };
+                tonm = IMG_Load("tonm.bmp");  toffm = IMG_Load("toffm.bmp"); soundvolume = { W / 2 - 290,H / 2 - 30,280,45 };
                 tonmtexture = SDL_CreateTextureFromSurface(menurenderer, tonm);
                 toffmtexture = SDL_CreateTextureFromSurface(menurenderer, toffm);
-                 tons = IMG_Load("tons.bmp"); toffs = IMG_Load("toffs.bmp");musicvolume = { W / 2 - 290,H / 2 + 70, 280, 45 };
+                tons = IMG_Load("tons.bmp"); toffs = IMG_Load("toffs.bmp"); musicvolume = { W / 2 - 290,H / 2 + 70, 280, 45 };
                 tonstexture = SDL_CreateTextureFromSurface(menurenderer, tons);
                 toffstexture = SDL_CreateTextureFromSurface(menurenderer, toffs);
-                 exitmenu = IMG_Load("exitmenu.bmp"); exitsettings = { W / 2 - 290,H / 2 + 170, 280, 45 };
+                exitmenu = IMG_Load("exitmenu.bmp"); exitsettings = { W / 2 - 290,H / 2 + 170, 280, 45 };
                 exitmenutexture = SDL_CreateTextureFromSurface(menurenderer, exitmenu);
-                 easy = IMG_Load("easy.bmp");  medium = IMG_Load("medium.bmp");  hard = IMG_Load("hard.bmp");  osob = IMG_Load("osob.bmp");  nicknames = IMG_Load("nickname.bmp");
+                easy = IMG_Load("easy.bmp");  medium = IMG_Load("medium.bmp");  hard = IMG_Load("hard.bmp");  osob = IMG_Load("osob.bmp");  nicknames = IMG_Load("nickname.bmp");
                 nicknamerect = { W / 2 - 290,H / 2 - 230,280,45 }; easyrect = { W / 2,H / 2 - 130, 280,45 }; mediumrect = { W / 2,H / 2 - 30, 280,45 }; hardrect = { W / 2,H / 2 + 70, 280,45 }; osobrect = { W / 2,H / 2 + 170, 280,45 };
                 easytexture = SDL_CreateTextureFromSurface(menurenderer, easy);
                 mediumtexture = SDL_CreateTextureFromSurface(menurenderer, medium);
@@ -117,9 +117,9 @@ int main(int argc, char* argv[])
                 currlvl2 = { W / 2 + 235, H / 2 - 30,45,45 };
                 currlvl3 = { W / 2 + 235, H / 2 + 70,45,45 };
                 currlvl4 = { W / 2 + 235, H / 2 + 170,45,45 }; SDL_Surface* icon = IMG_Load("gameCellMine.bmp"); currlvltexture = SDL_CreateTextureFromSurface(menurenderer, icon);
-               icon = IMG_Load("gameCellMine.bmp"); currlvltexture = SDL_CreateTextureFromSurface(menurenderer, icon);
+                icon = IMG_Load("gameCellMine.bmp"); currlvltexture = SDL_CreateTextureFromSurface(menurenderer, icon);
                 eazy = IMG_Load("eazy.bmp"); eazytexture = SDL_CreateTextureFromSurface(menurenderer, eazy);
-                mediumz = IMG_Load("mediumz.bmp");mediumztexture = SDL_CreateTextureFromSurface(menurenderer, mediumz);
+                mediumz = IMG_Load("mediumz.bmp"); mediumztexture = SDL_CreateTextureFromSurface(menurenderer, mediumz);
                 hardz = IMG_Load("hardz.bmp"); hardztexture = SDL_CreateTextureFromSurface(menurenderer, hardz);
                 eazyrect = { W / 2 - 290, H / 2 - 200, 180, 50 };
                 mediumzrect = { W / 2 - 90, H / 2 - 200, 180, 50 };
@@ -174,7 +174,6 @@ int main(int argc, char* argv[])
             }
 
         } break;
-
         case 1:
         {
             SDL_DestroyWindow(mainmenu);
@@ -440,18 +439,16 @@ int main(int argc, char* argv[])
                     }
                     
                 }
-
-
             }
         }
         break;
         case 3: 
         {
-            if (checkrec) 
+            if (checkrec)
             {
                 fstream fin;
                 fin.open("record.txt");
-                while (!fin.eof()) 
+                while (!fin.eof())
                 {
                     fin >> currnick;
                     fin >> sizex;
@@ -478,12 +475,14 @@ int main(int argc, char* argv[])
                 fin.close();
                 if (atoi(easyrec.c_str()) != 1000)
                 {
-                    easyREC = TextTexture(menurenderer, nickeasyrec +" "+ easyrec, font2);
-                } else easyREC = TextTexture(menurenderer, u8"Рекорда нет", font2);
+                    easyREC = TextTexture(menurenderer, nickeasyrec + " " + easyrec, font2);
+                }
+                else easyREC = TextTexture(menurenderer, u8"Рекорда нет", font2);
                 if (atoi(mediumrec.c_str()) != 1000)
                 {
                     mediumREC = TextTexture(menurenderer, nickmediumrec + " " + mediumrec, font2);
-                } else mediumREC = TextTexture(menurenderer, u8"Рекорда нет", font2);
+                }
+                else mediumREC = TextTexture(menurenderer, u8"Рекорда нет", font2);
                 if (atoi(hardrec.c_str()) != 1000)
                 {
                     hardREC = TextTexture(menurenderer, nickhardrec + " " + hardrec, font2);
@@ -510,11 +509,11 @@ int main(int argc, char* argv[])
                     }
                 }
             }
+
         }
         break;
         case 4: exit(0); break;
         }
-    
     } while (true);
     SDL_FreeSurface(startgame); SDL_FreeSurface(exitgame); SDL_FreeSurface(settings); SDL_FreeSurface(records);
     SDL_FreeSurface(tonfs); SDL_FreeSurface(tofffs); SDL_FreeSurface(tonm); SDL_FreeSurface(toffm);
